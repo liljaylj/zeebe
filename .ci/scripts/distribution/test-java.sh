@@ -1,5 +1,7 @@
 #!/bin/bash -eux
 
+source "${BASH_SOURCE%/*}/../lib/flaky-tests.sh"
+
 # getconf is a POSIX way to get the number of processors available which works on both Linux and macOS
 LIMITS_CPU=${LIMITS_CPU:-$(getconf _NPROCESSORS_ONLN)}
 MAVEN_PARALLELISM=${MAVEN_PARALLELISM:-$LIMITS_CPU}
@@ -23,21 +25,10 @@ if [ ! -z "$JUNIT_THREAD_COUNT" ]; then
 fi
 
 mvn -o -B --fail-never -T${MAVEN_PARALLELISM} -s ${MAVEN_SETTINGS_XML} verify -P skip-unstable-ci,parallel-tests "${MAVEN_PROPERTIES[@]}" | tee ${tmpfile}
-
 status=${PIPESTATUS[0]}
 
-if grep -q "\[WARNING\] Flakes:" ${tmpfile}; then
-
-  tmpfile2=$(mktemp)
-
-  awk '/^\[WARNING\] Flakes:.*$/{flag=1}/^\[ERROR\] Tests run:.*Flakes: [0-9]*$/{print;flag=0}flag' ${tmpfile} > ${tmpfile2}
-
-  grep "\[ERROR\]   Run 1: " ${tmpfile2} | awk '{print $4}' >> ./FlakyTests.txt
-
-  echo ERROR: Flaky Tests detected>&2
-
-  exit 1
-fi
+# delay checking the maven status after we've analysed flaky tests
+analyseFlakyTests "${tmpfile}" "./FlakyTests.txt" || exit $?
 
 if [[ $status != 0 ]]; then
   exit $status;
