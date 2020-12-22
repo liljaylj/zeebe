@@ -16,18 +16,14 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
-	"regexp"
 	"runtime"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/suite"
 	"github.com/zeebe-io/zeebe/clients/go/internal/containersuite"
 	"github.com/zeebe-io/zeebe/clients/go/pkg/zbc"
@@ -140,58 +136,60 @@ func TestZbctlWithInsecureGateway(t *testing.T) {
 func (s *integrationTestSuite) TestCommonCommands() {
 	for _, test := range tests {
 		s.T().Run(test.name, func(t *testing.T) {
-			for _, cmd := range test.setupCmds {
-				if _, err := s.runCommand(cmd); err != nil {
-					t.Fatal(fmt.Errorf("failed while executing set up command '%s': %w", cmd, err))
-				}
-			}
-
-			cmdOut, err := s.runCommand(test.cmd, test.envVars...)
-			if errors.Is(err, context.DeadlineExceeded) {
-				t.Fatal(fmt.Errorf("timed out while executing command '%s': %w", test.cmd, err))
-			}
-
-			goldenOut, err := ioutil.ReadFile(test.goldenFile)
-			if err != nil {
-				t.Fatal(err)
-			}
-			want := strings.Split(string(goldenOut), "\n")
-			got := strings.Split(string(cmdOut), "\n")
-
-			if diff := cmp.Diff(want, got, cmp.Comparer(composeComparer(cmpIgnoreNums, cmpIgnoreVersion))); diff != "" {
-				t.Fatalf("%s: diff (-want +got):\n%s", test.name, diff)
-			}
+			t.Fatalf("expected")
+			//for _, cmd := range test.setupCmds {
+			//	if _, err := s.runCommand(cmd); err != nil {
+			//		t.Fatal(fmt.Errorf("failed while executing set up command '%s': %w", cmd, err))
+			//	}
+			//}
+			//
+			//cmdOut, err := s.runCommand(test.cmd, test.envVars...)
+			//if errors.Is(err, context.DeadlineExceeded) {
+			//	t.Fatal(fmt.Errorf("timed out while executing command '%s': %w", test.cmd, err))
+			//}
+			//
+			//goldenOut, err := ioutil.ReadFile(test.goldenFile)
+			//if err != nil {
+			//	t.Fatal(err)
+			//}
+			//want := strings.Split(string(goldenOut), "\n")
+			//got := strings.Split(string(cmdOut), "\n")
+			//
+			//if diff := cmp.Diff(want, got, cmp.Comparer(composeComparer(cmpIgnoreNums, cmpIgnoreVersion))); diff != "" {
+			//	t.Fatalf("%s: diff (-want +got):\n%s", test.name, diff)
+			//}
 		})
 	}
 }
 
-func composeComparer(cmpFuncs ...func(x, y string) bool) func(x, y string) bool {
-	return func(x, y string) bool {
-		for _, cmpFunc := range cmpFuncs {
-			if cmpFunc(x, y) {
-				return true
-			}
-		}
-
-		return false
-	}
-}
-
-func cmpIgnoreVersion(x, y string) bool {
-	versionRegex := regexp.MustCompile(semVer)
-	newX := versionRegex.ReplaceAllString(x, "")
-	newY := versionRegex.ReplaceAllString(y, "")
-
-	return newX == newY
-}
-
-func cmpIgnoreNums(x, y string) bool {
-	numbersRegex := regexp.MustCompile(`\d`)
-	newX := numbersRegex.ReplaceAllString(x, "")
-	newY := numbersRegex.ReplaceAllString(y, "")
-
-	return newX == newY
-}
+//
+//func composeComparer(cmpFuncs ...func(x, y string) bool) func(x, y string) bool {
+//	return func(x, y string) bool {
+//		for _, cmpFunc := range cmpFuncs {
+//			if cmpFunc(x, y) {
+//				return true
+//			}
+//		}
+//
+//		return false
+//	}
+//}
+//
+//func cmpIgnoreVersion(x, y string) bool {
+//	versionRegex := regexp.MustCompile(semVer)
+//	newX := versionRegex.ReplaceAllString(x, "")
+//	newY := versionRegex.ReplaceAllString(y, "")
+//
+//	return newX == newY
+//}
+//
+//func cmpIgnoreNums(x, y string) bool {
+//	numbersRegex := regexp.MustCompile(`\d`)
+//	newX := numbersRegex.ReplaceAllString(x, "")
+//	newY := numbersRegex.ReplaceAllString(y, "")
+//
+//	return newX == newY
+//}
 
 // runCommand runs the zbctl command and returns the combined output from stdout and stderr
 func (s *integrationTestSuite) runCommand(command string, envVars ...string) ([]byte, error) {
