@@ -25,7 +25,7 @@ in this module's resources folder.
 
 You can configure the Elasticsearch Exporter with the following arguments:
 
-* `url` (`string`): a valid URL as a string (e.g. `http://localhost:9200`)
+* `urls` (`string`): a valid URLs as a string of comma-separated hosts (e.g. `http://elastic-1:9200,http://elastic-2:9200`)
 
 All other options fall under a two categories, both expressed as nested maps: `bulk` and `index`.
 
@@ -125,7 +125,7 @@ Here is a complete, default configuration example:
       className: io.zeebe.exporter.ElasticsearchExporter
 
       args:
-        url: http://localhost:9200
+        urls: http://elastic-1:9200,http://elastic-2:9200
 
         bulk:
           delay: 5

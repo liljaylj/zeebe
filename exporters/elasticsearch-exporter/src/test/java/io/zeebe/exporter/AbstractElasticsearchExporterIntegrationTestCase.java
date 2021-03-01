@@ -127,7 +127,7 @@ public abstract class AbstractElasticsearchExporterIntegrationTestCase {
     final ElasticsearchExporterConfiguration configuration =
         new ElasticsearchExporterConfiguration();
 
-    configuration.url = elastic.getRestHttpHost().toString();
+    configuration.urls = elastic.getRestHttpHost().toString();
 
     configuration.bulk.delay = 1;
     configuration.bulk.size = 1;
